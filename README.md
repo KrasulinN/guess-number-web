@@ -49,26 +49,26 @@
 - Побеждайте, угадав число за заданное количество попыток.
 
 ---
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 ## Установка и запуск проекта
 
 ### Локальный запуск
 
 1. **Склонируйте репозиторий**:
    ```bash
-   git clone https://github.com/username/minesweeper.git
+   git clone https://github.com/KrasulinN/guess-number-web
    
 2. **Перейдите в папку проекта**:
 
 ```bash
-cd minesweeper
+cd guess-number
 ```
 3. **Откройте файл index.html в вашем браузере**: 
     Просто откройте файл index.html, чтобы начать игру.
 
 4. **Запуск через GitHub Pages**:
 Проект доступен онлайн через GitHub Pages:
-[Играть в Minesweeper](ссылка на веб сайт)
+[Играть в Guess-number](https://krasulinn.github.io/guess-number-web/)
 
 ## Технические требования
 - Современный браузер с поддержкой IndexedDB (например, Chrome, Firefox, Edge).
@@ -77,5 +77,5 @@ cd minesweeper
 - Сохранённые игры остаются в вашем браузере, пока вы не очистите локальные данные.
 - Для обновления проекта просто загрузите последнюю версию репозитория.
 ## Ссылки
-[GitHub Репозиторий]()
-[Играть через GitHub Pages]()
+[GitHub Репозиторий](https://github.com/KrasulinN/guess-number-web)
+[Играть через GitHub Pages](https://krasulinn.github.io/guess-number-web/)
