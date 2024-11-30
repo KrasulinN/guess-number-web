@@ -1,36 +1,65 @@
-let db;
+let dbPromise;
 
 function initIndexedDB() {
-    const request = indexedDB.open('GameDatabase', 1);
-
-    request.onupgradeneeded = function(event) {
-        db = event.target.result;
-        const objectStore = db.createObjectStore('games', { keyPath: 'id', autoIncrement: true });
-        objectStore.createIndex('playerName', 'playerName', { unique: false });
-        objectStore.createIndex('result', 'result', { unique: false });
-    };
-
-    request.onsuccess = function(event) {
-        db = event.target.result;
-    };
-
-    request.onerror = function(event) {
-        console.error('Ошибка при открытии базы данных', event.target.error);
-    };
+    dbPromise = idb.open('GameDatabase', 1, function(upgradeDb) {
+        if (!upgradeDb.objectStoreNames.contains('games')) {
+            const objectStore = upgradeDb.createObjectStore('games', { keyPath: 'id', autoIncrement: true });
+            objectStore.createIndex('playerName', 'playerName', { unique: false });
+            objectStore.createIndex('result', 'result', { unique: false });
+        }
+    });
 }
 
 function saveToIndexedDB(gameResult) {
-    const transaction = db.transaction(['games'], 'readwrite');
-    const objectStore = transaction.objectStore('games');
-    const request = objectStore.add(gameResult);
-
-    request.onsuccess = function() {
+    dbPromise.then(function(db) {
+        const tx = db.transaction('games', 'readwrite');
+        const store = tx.objectStore('games');
+        store.add(gameResult);
+        return tx.complete;
+    }).then(function() {
         console.log('Результат игры сохранен');
-    };
+    }).catch(function(error) {
+        console.error('Ошибка при сохранении результата игры', error);
+    });
+}
 
-    request.onerror = function(event) {
-        console.error('Ошибка при сохранении результата игры', event.target.error);
-    };
+function getAllGames() {
+    return dbPromise.then(function(db) {
+        const tx = db.transaction('games', 'readonly');
+        const store = tx.objectStore('games');
+        return store.getAll();
+    });
+}
+
+function getAllWins() {
+    return dbPromise.then(function(db) {
+        const tx = db.transaction('games', 'readonly');
+        const store = tx.objectStore('games');
+        const index = store.index('result');
+        return index.getAll('win');
+    });
+}
+
+function getAllLosses() {
+    return dbPromise.then(function(db) {
+        const tx = db.transaction('games', 'readonly');
+        const store = tx.objectStore('games');
+        const index = store.index('result');
+        return index.getAll('lose');
+    });
+}
+
+function getStatistics() {
+    return Promise.all([getAllGames(), getAllWins(), getAllLosses()]).then(function(results) {
+        const allGames = results[0];
+        const allWins = results[1];
+        const allLosses = results[2];
+        return {
+            totalGames: allGames.length,
+            totalWins: allWins.length,
+            totalLosses: allLosses.length
+        };
+    });
 }
 
 initIndexedDB();

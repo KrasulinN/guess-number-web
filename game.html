@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игра "Угадай число"</title>
     <link rel="stylesheet" href="styles.css">
+    <script type="module" src="game.js"></script>
 </head>
 <body>
     <div class="container">
@@ -16,17 +17,19 @@
         <p id="message"></p>
     </div>
 
-    <script src="script.js"></script>
-    <script>
+    <script type="module">
+        import { saveGameResult } from './db.js';
+
         const maxNumber = parseInt(localStorage.getItem('maxNumber'));
         const attempts = parseInt(localStorage.getItem('attempts'));
         const playerName = localStorage.getItem('playerName');
         const targetNumber = Math.floor(Math.random() * maxNumber) + 1;
         let remainingAttempts = attempts;
+        let gameActions = [];
 
         document.getElementById('gameInfo').innerText = `Игрок: ${playerName}, Попытки: ${remainingAttempts}, Диапазон: 1-${maxNumber}`;
 
-        document.getElementById('guessButton').addEventListener('click', function() {
+        document.getElementById('guessButton').addEventListener('click', async function() {
             const guess = parseInt(document.getElementById('guessInput').value);
             const messageElement = document.getElementById('message');
 
@@ -36,14 +39,29 @@
             }
 
             remainingAttempts--;
+            gameActions.push({ guess, response: guess < targetNumber ? 'больше' : 'меньше' });
 
             if (guess === targetNumber) {
                 messageElement.innerText = 'Поздравляем! Вы угадали число!';
-                saveGameResult('win');
+                await saveGameResult({
+                    playerName: playerName,
+                    maxNumber: maxNumber,
+                    attempts: attempts,
+                    result: 'win',
+                    date: new Date().toISOString(),
+                    actions: gameActions
+                });
                 showBackButton();
             } else if (remainingAttempts === 0) {
                 messageElement.innerText = `К сожалению, вы проиграли. Правильное число было ${targetNumber}`;
-                saveGameResult('lose');
+                await saveGameResult({
+                    playerName: playerName,
+                    maxNumber: maxNumber,
+                    attempts: attempts,
+                    result: 'lose',
+                    date: new Date().toISOString(),
+                    actions: gameActions
+                });
                 showBackButton();
             } else {
                 document.getElementById('gameInfo').innerText = `Игрок: ${playerName}, Попытки: ${remainingAttempts}, Диапазон: 1-${maxNumber}`;
@@ -58,18 +76,6 @@
         function showBackButton() {
             document.getElementById('guessButton').style.display = 'none';
             document.getElementById('backButton').style.display = 'block';
-        }
-
-        function saveGameResult(result) {
-            const gameResult = {
-                playerName: playerName,
-                maxNumber: maxNumber,
-                attempts: attempts,
-                result: result,
-                date: new Date().toISOString()
-            };
-
-            saveToIndexedDB(gameResult);
         }
     </script>
 </body>
